@@ -5,7 +5,7 @@ use \Core\Core;
 require __DIR__ . '/Core.php';
 require __DIR__ . '/expenses.php';
 
-$url = 'https://b24-hpr358.bitrix24.ru/rest/1/dh1nfdj14atiz2do';
+$url = '';
 
 $elementId = $_POST['document_id']['2'];
 
