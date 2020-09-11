@@ -8,7 +8,7 @@ require __DIR__ . '/expenses.php';
 $url = '';
 
 $elementId = $_POST['document_id']['2'];
-
+//Берём элемент из списка
 $listsElement = Core::BT24(
     'lists.element.get',
     [
@@ -20,16 +20,21 @@ $listsElement = Core::BT24(
 )['result'][0];
 
 $dealId = '';
-
+//Берём ID сделки прикреплённой к элементу
 foreach ($listsElement['PROPERTY_103'] as $key => $value)
 {
     $dealId = $value;
 }
-
+//Берём сделку по ID
 $deal = getDeal($dealId, $url);
-
+//Берём цену вставленную в сделке
 $opportunity = $deal['OPPORTUNITY'];
 
+/*
+ * Если элемент списка обновлён.
+ * Проверяем элемент на существования если элемент существует в массиве расходов то
+ * обновляем его значения и пересчитываем доходи и расходы и обновляем поля в сделке
+ */
 if (array_key_exists($elementId ,$expenses[$dealId])){
     $suma = 0;
 
@@ -54,6 +59,11 @@ if (array_key_exists($elementId ,$expenses[$dealId])){
     }
 }
 
+/*
+ * Когда в списке расходов пусто то сработает этот блок.
+ * Если в массиве расходов не существует сделка то оно добавляется в наш массив.
+ * и поля расходов будут добавлен в массив.
+ */
 if (!isset($expenses[$dealId])) {
     $profit = '';
     $totalExpenses = '';
@@ -75,7 +85,10 @@ if (!isset($expenses[$dealId])) {
     $expenses[$dealId][$elementId] = $suma;
     Core::WriteVariableToFile('expenses', $expenses);
 }
-
+/*
+ * В массиве расходов проверяется если сделка существует но элемент который добавлен не существует
+ * то элемент добавляется в массив расходов и пересчитается расходы и доходы и обновляется сделка.
+ */
 if (array_key_exists($dealId ,$expenses) && !array_key_exists($elementId ,$expenses[$dealId])){
     $profit = '';
     $totalExpenses = $deal['UF_CRM_1599645571288'];
@@ -102,7 +115,7 @@ if (array_key_exists($dealId ,$expenses) && !array_key_exists($elementId ,$expen
     Core::WriteVariableToFile('expenses', $expenses);
 }
 
-
+//Функция берёт сделку по ID
 function getDeal($dealId, $url)
 {
     return Core::BT24(
@@ -113,7 +126,7 @@ function getDeal($dealId, $url)
         $url
     )['result'];
 }
-
+//Функция обновляет сделку
 function updateDeal($dealId, $url, $profit, $totalExpenses)
 {
     return Core::BT24(
